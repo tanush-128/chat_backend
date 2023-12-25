@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "faker": "^6.6.6",
+    "prisma": "^5.7.1",
+    "ws": "^8.15.1"
+  },
+  "name": "chat-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/ws": "^8.5.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
