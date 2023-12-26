@@ -12,11 +12,8 @@ interface ChatRoomOnUserWithUser extends ChatRoomOnUser {
 }
 
 export interface ChatRoomType extends ChatRoom {
-  messages: Message[];
   users: ChatRoomOnUserWithUser[];
 }
-
-// const ws =require("ws")
 
 const users: UserConnection[] = [];
 
@@ -30,12 +27,7 @@ class UserConnection {
     this.ws = ws;
     getChatRoomMessages(userEmail).then((chatrooms) => {
       this.chatrooms = chatrooms;
-      this.ws.send(
-        JSON.stringify({
-          type: "chatrooms",
-          data: chatrooms,
-        })
-      );
+
       this.NotifyOnlineUsers();
     });
 
@@ -47,39 +39,9 @@ class UserConnection {
       if (_message.type === "typing") {
         this.onTyping(_message);
       }
-      if (_message.type === "webrtc") {
-        if (_message.offer.type === "call") {
-          console.log(_message);
-          users.forEach((user) => {
-            if (
-              _message.data.userEmails.includes(user.userEmail) &&
-              user.userEmail !== this.userEmail
-            ) {
-              const callOffer = {
-                ..._message,
-                data: {
-                  userEmails: _message.data.userEmails.filter(
-                    (email: string) => email !== user.userEmail
-                  ),
-                  selfEmail: this.userEmail,
-                },
-              };
-              console.log("sending webrtc call :", callOffer);
-              user.sendMessage(callOffer);
-            }
-          });
-        } else {
-          users.forEach((user) => {
-            if (_message.data.to === user.userEmail) {
-              user.sendMessage(_message);
-            }
-          });
-        }
-      }
     };
 
     this.ws.onclose = () => {
-      // when user closes the connection notify the other users which have a chatroom common with this user
       users.forEach((user) => {
         if (user.userEmail !== this.userEmail) {
           user.chatrooms.forEach((chatroom) => {
@@ -103,7 +65,7 @@ class UserConnection {
 
   NotifyOnlineUsers = () => {
     console.log("open");
-    //check if user is online then notify other users which have a chatroom common with this user and also notify this user about other online users
+
     users.forEach((user) => {
       if (user.userEmail !== this.userEmail) {
         user.chatrooms.forEach((chatroom) => {
@@ -172,7 +134,6 @@ class UserConnection {
     this.ws.send(JSON.stringify(message));
   }
 }
-// upgrade socketserver to  ws:// to wss://
 
 const wss = new WebSocketServer({ port: 3001 });
 
@@ -190,7 +151,6 @@ async function getChatRoomMessages(userEmail: string) {
       },
     },
     include: {
-      messages: true,
       users: {
         include: {
           user: true,
