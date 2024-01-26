@@ -44,6 +44,7 @@ model User {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   chatRoomsIds  String[]
+  subscriptions String[]
   accounts      Account[]
   chatRooms     ChatRoomOnUser[]
   messages      Message[]
@@ -86,8 +87,8 @@ model ChatRoomOnUser {
   id         String   @id @default(cuid())
   userId     String
   chatRoomId String
-  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, chatRoomId])
 }
@@ -99,6 +100,6 @@ model Message {
   userEmail  String
   userName   String
   chatRoomId String
-  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
-  user       User     @relation(fields: [userEmail], references: [email])
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
 }

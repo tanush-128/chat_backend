@@ -1,4 +1,4 @@
-import { WebSocketServer } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 import {
   ChatRoom,
   ChatRoomOnUser,
@@ -6,7 +6,12 @@ import {
   PrismaClient,
   User,
 } from "@prisma/client";
-
+import { Http2ServerRequest, Http2ServerResponse } from "http2";
+// import {} from "http2"
+import express from "express";
+import { IncomingMessage } from "http";
+import { createServer } from "http";
+import { Server } from "socket.io";
 interface ChatRoomOnUserWithUser extends ChatRoomOnUser {
   user: User;
 }
@@ -32,7 +37,7 @@ class UserConnection {
     });
 
     this.ws.onmessage = (message) => {
-      const _message = JSON.parse(message.data);
+      const _message = JSON.parse(message.data.toString());
       if (_message.type === "message") {
         this.onMessage(_message);
       }
@@ -135,7 +140,30 @@ class UserConnection {
   }
 }
 
-const wss = new WebSocketServer({ port: 3001 });
+
+// const httpServer = createServer();
+// const io = new Server(httpServer, {
+//   // options
+// });
+
+// io.on("connection", (socket) => {
+//   // ..
+
+// });
+
+// httpServer.listen(3001);
+
+const wss = new WebSocketServer({ noServer: true });
+const app: express.Application = express();
+
+app.get("/", (req, res) => {
+  wss.handleUpgrade(req, req.socket, Buffer.alloc(0), onConnect);
+});
+
+app.listen(3001, () => {
+  console.log("Example app listening on port 3001!");
+});
+const server = app.listen(3001);
 
 const prisma = new PrismaClient();
 
@@ -178,14 +206,11 @@ async function setChatRoomUsers(
   });
 }
 
-wss.on("connection", function (ws: WebSocket, incomingMessage) {
-  const searchParams = new URL(
-    incomingMessage.url as string,
-    "ws://localhost:3001"
-  );
+const onConnect = (client: WebSocket, request: IncomingMessage) => {
+  const searchParams = new URL(request.url as string, "http://localhost:3001");
   const userEmail: string = searchParams.searchParams.get(
     "userEmail"
   ) as string;
-  const user = new UserConnection(userEmail, ws);
+  const user = new UserConnection(userEmail, client);
   users.push(user);
-});
+};
